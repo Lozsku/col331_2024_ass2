@@ -71,25 +71,6 @@ install_trans(void)
     if (LOG_FLAG == 5) {
       if (tail == log.lh.n/2) panic("[UNDOLOG] Panic in install_trans type 5");
     }
-    // struct buf *lbuf = bread(log.dev, log.start+tail+1); // read log block
-    struct buf *dbuf = bread(log.dev, log.lh.block[tail]); // read dst
-    // memmove(dbuf->data, lbuf->data, BSIZE);  // copy block to dst
-    bwrite(dbuf);  // write dst to disk
-    // brelse(lbuf);
-    brelse(dbuf);
-  }
-}
-
-
-static void
-recover_trans(void)
-{
-  int tail;
-
-  for (tail = 0; tail < log.lh.n; tail++) {
-    if (LOG_FLAG == 5) {
-      if (tail == log.lh.n/2) panic("[UNDOLOG] Panic in install_trans type 5");
-    }
     struct buf *lbuf = bread(log.dev, log.start+tail+1); // read log block
     struct buf *dbuf = bread(log.dev, log.lh.block[tail]); // read dst
     memmove(dbuf->data, lbuf->data, BSIZE);  // copy block to dst
@@ -98,7 +79,6 @@ recover_trans(void)
     brelse(dbuf);
   }
 }
-
 
 // Read the log header from disk into the in-memory log header
 static void
@@ -135,7 +115,7 @@ static void
 recover_from_log(void)
 {
   read_head();
-  recover_trans(); // if committed, copy from log to disk
+  install_trans(); // if committed, copy from log to disk
   log.lh.n = 0;
   write_head(); // clear the log
 }
@@ -207,15 +187,3 @@ log_write(struct buf *b)
     log.lh.n++;
   b->flags |= B_DIRTY; // prevent eviction
 }
-
-void log_read(struct buf *b) {
-  struct buf *lbuf = bread(log.dev, log.start + log.lh.n + 1);
-  memmove(lbuf->data,b->data, BSIZE);
-  bwrite(lbuf);
-  brelse(lbuf);
-}
-
-
-
-
-

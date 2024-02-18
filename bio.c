@@ -103,14 +103,7 @@ bwrite(struct buf *b)
 struct buf* 
 bread_wr(uint dev, uint blockno) {
   // IMPLEMENT YOUR CODE HERE
-  struct buf *b;
-
-  b = bget(dev, blockno);
-  if((b->flags & B_VALID) == 0) {
-    iderw(b);
-  }
-  log_read(b);
-  return b;
+  return 0;
 }
 
 // Release a buffer.
